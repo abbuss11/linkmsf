@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Actions\Candidates\SaveCandidateEducation;
+use App\Actions\Candidates\SaveCandidateExperience;
+use App\Actions\Candidates\UpdateCandidateProfile;
 use App\Actions\JobPostings\CreateJobPostingDraft;
 use App\Actions\JobPostings\PublishJobPosting;
 use App\Actions\JobPostings\SaveApplicationForm;
@@ -70,7 +73,13 @@ class DemoSeeder extends Seeder
         $this->member($sahel, $multi, OrganizationRole::Recruiter);
         $this->member($kawtal, $multi, OrganizationRole::Jury);
 
-        $this->user('Zeinabou Harouna', 'candidat@link.test', type: UserType::Candidate);
+        $candidate = $this->user('Zeinabou Harouna', 'candidat@link.test', type: UserType::Candidate);
+        $this->candidateProfile($candidate);
+
+        $sahel->forceFill([
+            'about' => '<p>Sahel Avenir accompagne depuis 2008 les écoles et les communes de la région de Tillabéri.</p>',
+            'website' => 'https://sahel-avenir.example.org',
+        ])->save();
 
         $this->jobPostings($sahel, $sahelRecruiter, $kawtal, $kawtalRecruiter);
 
@@ -162,6 +171,40 @@ class DemoSeeder extends Seeder
             ]);
             app(PublishJobPosting::class)->handle($kawtalRecruiter, $posting->fresh());
         });
+    }
+
+    /**
+     * A complete profile, so that the application form is pre-filled.
+     */
+    private function candidateProfile(User $candidate): void
+    {
+        app(UpdateCandidateProfile::class)->handle($candidate, [
+            'name' => $candidate->name,
+            'phone' => '+227 96 12 34 56',
+            'birth_date' => '1994-06-15',
+            'city' => 'Niamey',
+            'country' => 'NE',
+            'education_level' => 'master',
+            'diploma' => 'Master en statistique appliquée',
+            'languages' => 'Français, Haoussa, Zarma',
+            'years_of_experience' => 5,
+            'headline' => 'Spécialiste suivi-évaluation',
+        ]);
+
+        app(SaveCandidateEducation::class)->handle($candidate, null, [
+            'degree' => 'Master en statistique appliquée',
+            'institution' => 'Université Abdou Moumouni',
+            'start_year' => 2016,
+            'end_year' => 2018,
+        ]);
+
+        app(SaveCandidateExperience::class)->handle($candidate, null, [
+            'title' => 'Assistante suivi-évaluation',
+            'employer' => 'Programme Éducation Sahel',
+            'location' => 'Tillabéri',
+            'start_date' => '2019-02-01',
+            'is_current' => true,
+        ]);
     }
 
     private function user(string $name, string $email, UserType $type = UserType::Internal, bool $mfaByEmail = false): User

@@ -29,7 +29,15 @@ Filament ajoute son propre scope de tenant (`app_tenancy`) sur les modèles des 
 
 - `application_forms.schema` : copie de travail éditée dans l'assistant.
 - `application_form_versions` : copies figées, immuables, créées à la publication si l'empreinte du schéma change. Chaque candidature (phase 3) référencera sa version.
-- `app/Forms/Dynamic` : `SchemaValidator` (structure), `RulesBuilder` (règles de validation serveur), `FilamentFormRenderer` (affichage), `RequirementRuleValidator` (critères éliminatoires). L'aperçu et le futur formulaire candidat utilisent les mêmes règles.
+- `app/Forms/Dynamic` : `SchemaValidator` (structure), `RulesBuilder` (règles de validation serveur), `RequirementRuleValidator` (critères éliminatoires). L'affichage passe par les composants Blade `resources/views/components/dynamic/*`, communs au formulaire candidat et à l'aperçu du back-office (`App\Livewire\FormPreview`, affiché dans un iframe du panel /app) : ce que voit le recruteur est ce que verra le candidat.
+
+## Candidatures (phase 3)
+
+- `applications`, `application_answers`, `application_documents`, `application_revisions`, `organization_counters` : `organization_id` + `BelongsToOrganization`, renseigné depuis l'offre, jamais depuis le client.
+- Côté candidat, il n'y a pas d'organisation active : les requêtes partent du candidat (`Application::forCandidate($user)`) et le paramètre `{application}` des URL est résolu uniquement parmi ses candidatures (404 sinon). Les relations atteintes depuis un enregistrement déjà chargé (`jobPosting`, `formVersion`, `currentVersion`) ignorent le scope : la clé étrangère les rattache déjà à la bonne organisation.
+- Pages publiques (`/offres`, `/o/{slug}`, sitemap) : `OpenJobPostings::query()`, inter-organisations par nature, limité aux offres publiées, ouvertes, d'organisations actives.
+- Fichiers : disque privé (`DOCUMENTS_DISK`), chemin `applications/{organisation}/{candidature}/{uuid}.{ext}`, liens signés de 5 minutes, policy revérifiée au téléchargement.
+- Le profil, les formations, les expériences et les documents réutilisables appartiennent au candidat (`user_id`), pas à une organisation : exception prévue par le §4.2. Les organisations ne reçoivent qu'une copie à la soumission.
 
 ## Exceptions documentées
 
@@ -40,4 +48,4 @@ Filament ajoute son propre scope de tenant (`app_tenancy`) sur les modèles des 
 
 ## Tests
 
-`tests/Feature/Tenancy` vérifie le trait (lecture, création, réaffectation, jobs) et, pour chaque ressource, l'accès depuis une autre organisation : URL, identifiant, action Livewire et action métier.
+`tests/Feature/Tenancy` vérifie le trait (lecture, création, réaffectation, jobs) et, pour chaque ressource, l'accès depuis une autre organisation : URL, identifiant, action Livewire et action métier. `ApplicationIsolationTest` vérifie aussi l'isolation entre candidats (candidatures, envoi de fichiers, liens signés, documents du profil, formations).

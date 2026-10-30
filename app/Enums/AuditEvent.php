@@ -51,6 +51,11 @@ enum AuditEvent: string implements HasLabel
     case RecruiterAssigned = 'job_posting.recruiter_assigned';
     case RecruiterUnassigned = 'job_posting.recruiter_unassigned';
 
+    // Applications
+    case ApplicationSubmitted = 'application.submitted';
+    case ApplicationUpdated = 'application.updated';
+    case ApplicationWithdrawn = 'application.withdrawn';
+
     public function getLabel(): string
     {
         return __('enums.audit_event.'.str_replace('.', '_', $this->value));

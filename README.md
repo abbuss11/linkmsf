@@ -64,7 +64,10 @@ Sont aussi créés :
 
 - une demande d'espace en attente (« Coopérative Tafadek ») ;
 - chez Sahel Avenir : une offre publiée avec son formulaire, ses critères et ses pièces (`SAH-2026-001`) et un brouillon (`SAH-2026-002`) ;
-- chez Kawtal Conseil, qui exige la validation des offres : une offre soumise en attente de validation (`KAW-2026-001`).
+- chez Kawtal Conseil, qui exige la validation des offres : une offre soumise en attente de validation (`KAW-2026-001`) ;
+- un profil complet pour `candidat@link.test` (formation, expérience), pour essayer le pré-remplissage.
+
+Pages publiques : `/offres` (job board), `/offres/{slug}` (offre), `/o/sahel-avenir` (page carrière), `/sitemap.xml`. Le worker de file (`php artisan horizon` ou `queue:work`) génère les images de partage et envoie les e-mails ; `php artisan storage:link` rend les images accessibles.
 
 En production, la tâche planifiée se lance par une entrée cron : `* * * * * php /chemin/vers/link/artisan schedule:run`.
 
@@ -74,6 +77,7 @@ En production, la tâche planifiée se lance par une entrée cron : `* * * * * p
 vendor/bin/pest                    # tests (base MySQL link_testing)
 vendor/bin/pint                    # formatage
 vendor/bin/phpstan analyse         # analyse statique
+node tests/Browser/phone-3g.js     # parcours candidat sur téléphone en 3G (serveur lancé, base de démo)
 ```
 
 Les tests utilisent la base `link_testing` (voir `phpunit.xml`) avec les identifiants du `.env`.
@@ -85,6 +89,8 @@ Les tests utilisent la base `link_testing` (voir `phpunit.xml`) avec les identif
 - `app/Models/Concerns/BelongsToOrganization.php` : isolation par organisation (voir [docs/architecture.md](docs/architecture.md)).
 - `app/Policies` : une policy par modèle exposé.
 - `app/Filament/Admin` (panel plateforme) et `app/Filament/App` (panel organisation).
+- `app/Livewire` : assistant de candidature et aperçu du formulaire ; `resources/views/components/dynamic` : rendu Blade des champs.
+- `app/Http/Controllers/Showcase` (vitrine) et `app/Http/Controllers/Candidate` (espace candidat, envoi par morceaux, téléchargements signés).
 - `lang/fr` : tous les textes d'interface.
 
 Voir aussi [docs/roles-et-permissions.md](docs/roles-et-permissions.md) et [docs/decisions.md](docs/decisions.md).

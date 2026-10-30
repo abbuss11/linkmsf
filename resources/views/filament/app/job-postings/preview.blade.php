@@ -24,21 +24,12 @@
         </div>
 
         <div class="mx-auto transition-all" x-bind:style="device === 'mobile' ? 'max-width: 375px' : 'max-width: 48rem'">
-            <x-filament::section>
-                <x-slot name="heading">{{ $this->posting()->title }}</x-slot>
-
-                @if ($this->formSchema()->isEmpty())
-                    <p class="text-sm text-gray-500">{{ __('job_postings.preview.empty') }}</p>
-                @else
-                    <form wire:submit="check" novalidate style="display:flex;flex-direction:column;gap:1.5rem">
-                        {{ $this->form }}
-
-                        <x-filament::button type="submit">
-                            {{ __('job_postings.preview.check') }}
-                        </x-filament::button>
-                    </form>
-                @endif
-            </x-filament::section>
+            <iframe
+                src="{{ $this->previewUrl() }}"
+                wire:key="preview-{{ $version ?? 'draft' }}"
+                title="{{ __('job_postings.preview.title', ['title' => $this->posting()->title]) }}"
+                style="width:100%;height:75vh;border:1px solid rgb(226 232 240);border-radius:0.5rem;background:#fff"
+                loading="lazy"></iframe>
         </div>
 
         <p class="text-center text-xs text-gray-500">{{ __('job_postings.preview.notice') }}</p>

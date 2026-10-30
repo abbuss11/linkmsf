@@ -5,7 +5,9 @@ return [
     'not_allowed' => 'Vous n’avez pas le droit d’effectuer cette action.',
     'nav' => [
         'label' => 'Navigation principale',
+        'offers' => 'Offres',
         'my_space' => 'Mon espace',
+        'profile' => 'Mon profil',
         'back_office' => 'Espace organisation',
         'logout' => 'Se déconnecter',
         'login' => 'Se connecter',

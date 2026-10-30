@@ -160,5 +160,33 @@ return [
         'job_posting_duplicated' => 'Offre dupliquée',
         'job_posting_recruiter_assigned' => 'Recruteur affecté',
         'job_posting_recruiter_unassigned' => 'Recruteur désaffecté',
+        'application_submitted' => 'Candidature envoyée',
+        'application_updated' => 'Candidature modifiée',
+        'application_withdrawn' => 'Candidature retirée',
+    ],
+    'application_status' => [
+        'draft' => 'Brouillon',
+        'submitted' => 'Envoyée',
+        'withdrawn' => 'Retirée',
+    ],
+    'public_application_status' => [
+        'received' => 'Reçue',
+        'under_review' => 'En cours d’étude',
+        'invited' => 'Convoqué(e)',
+        'selected' => 'Retenue',
+        'not_selected' => 'Non retenue',
+        'withdrawn' => 'Retirée',
+    ],
+    'candidate_document_type' => [
+        'cv' => 'CV',
+        'diploma' => 'Diplôme',
+        'certificate' => 'Attestation / certificat',
+        'other' => 'Autre',
+    ],
+    'gender' => [
+        'female' => 'Femme',
+        'male' => 'Homme',
+        'other' => 'Autre',
+        'undisclosed' => 'Je préfère ne pas répondre',
     ],
 ];

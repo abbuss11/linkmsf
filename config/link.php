@@ -12,6 +12,18 @@ return [
     | File fields of application forms. Organisations may be stricter per
     | field, never looser than the caps. Sizes target slow mobile connections.
     */
+    /*
+    | Disk of candidate and application documents: private, never served
+    | directly (signed, authorised route only). S3-compatible in production.
+    */
+    'documents_disk' => env('DOCUMENTS_DISK', 'local'),
+
+    'applications' => [
+        'chunk_size_kb' => 512,
+        'download_link_minutes' => 5,
+        'draft_reminder_hours' => 48,
+    ],
+
     'uploads' => [
         'allowed_extensions' => ['pdf', 'jpg', 'png', 'docx'],
         'default_max_kb' => 5120,
@@ -35,6 +47,8 @@ return [
         'password_reset_per_hour' => 5,
         'organization_requests_per_hour_per_ip' => 5,
         'invitation_accept_per_minute' => 10,
+        'application_submissions_per_hour' => 30,
+        'upload_requests_per_minute' => 240,
     ],
 
     'anti_spam' => [

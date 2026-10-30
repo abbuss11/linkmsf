@@ -4,7 +4,9 @@ namespace App\Actions\JobPostings;
 
 use App\Actions\Audit\RecordAuditEvent;
 use App\Enums\AuditEvent;
+use App\Enums\JobPostingStatus;
 use App\Exceptions\ActionFailed;
+use App\Jobs\GenerateShareImage;
 use App\Models\JobPosting;
 use App\Models\Organization;
 use App\Models\User;
@@ -57,6 +59,10 @@ class UpdateJobPostingDetails
             $posting->wizard_step = max($posting->wizard_step, 2);
             $changed = array_keys($posting->getDirty());
             $posting->save();
+
+            if (array_intersect($changed, ['title', 'location', 'closes_at']) !== [] && $posting->status === JobPostingStatus::Published) {
+                GenerateShareImage::dispatch($posting)->afterCommit();
+            }
 
             if ($changed !== []) {
                 $this->audit->handle(

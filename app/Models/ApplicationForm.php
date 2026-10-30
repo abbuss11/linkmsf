@@ -62,7 +62,9 @@ class ApplicationForm extends Model
      */
     public function currentVersion(): BelongsTo
     {
-        return $this->belongsTo(ApplicationFormVersion::class, 'current_version_id');
+        // Reached from a form already loaded for its organisation: the key
+        // ties the version to it, so it also works on public pages.
+        return $this->belongsTo(ApplicationFormVersion::class, 'current_version_id')->withoutGlobalScopes();
     }
 
     /**

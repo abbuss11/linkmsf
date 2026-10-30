@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="{{ $robots }}">
     <title>{{ $title ? $title.' · ' : '' }}{{ config('app.name') }}</title>
-    @vite('resources/css/app.css')
+    @vite(['resources/css/app.css', 'resources/js/dynamic-form.js'])
     @stack('head')
 </head>
 <body class="min-h-screen bg-slate-50 font-sans text-slate-900 antialiased">
@@ -18,10 +18,12 @@
     <header class="border-b border-slate-200 bg-white">
         <div class="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-3">
             <a href="{{ route('home') }}" class="text-lg font-bold text-brand-700">{{ config('app.name') }}</a>
-            <nav aria-label="{{ __('public.nav.label') }}" class="flex flex-wrap items-center gap-3 text-sm">
+            <nav aria-label="{{ __('public.nav.label') }}" class="flex flex-wrap items-center justify-end gap-3 text-sm">
+                <a href="{{ route('job-postings.index') }}" class="hover:underline">{{ __('public.nav.offers') }}</a>
                 @auth
                     @if (auth()->user()->isCandidate())
                         <a href="{{ route('candidate.dashboard') }}" class="hover:underline">{{ __('public.nav.my_space') }}</a>
+                        <a href="{{ route('candidate.profile') }}" class="hover:underline">{{ __('public.nav.profile') }}</a>
                     @else
                         <a href="{{ url('/app') }}" class="hover:underline">{{ __('public.nav.back_office') }}</a>
                     @endif

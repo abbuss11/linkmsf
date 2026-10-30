@@ -20,6 +20,7 @@ return [
         'messages' => 'Messages aux candidats',
     ],
     'fields' => [
+        'applications_count' => 'Candidatures',
         'type' => 'Type',
         'title' => 'Intitulé',
         'reference' => 'Référence',

@@ -9,3 +9,7 @@
     --color-brand-700: #0f766e;
     --color-brand-800: #115e59;
 }
+
+[x-cloak] {
+    display: none !important;
+}

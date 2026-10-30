@@ -8,6 +8,7 @@ use App\Filament\App\Widgets\RoleWelcome;
 use App\Filament\Shared\Pages\EditProfile;
 use App\Http\Middleware\EnsurePrivilegedUsersHaveMultiFactorAuthentication;
 use App\Http\Middleware\SetOrganizationContext;
+use App\Livewire\FormPreview;
 use App\Models\Organization;
 use Filament\Auth\MultiFactor\App\AppAuthentication;
 use Filament\Auth\MultiFactor\Email\EmailAuthentication;
@@ -24,6 +25,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 /**
@@ -54,6 +56,12 @@ class AppPanelProvider extends PanelProvider
             ->tenantMiddleware([
                 SetOrganizationContext::class,
             ], isPersistent: true)
+            // Form preview drawn with the candidate stylesheet, in an iframe.
+            ->authenticatedTenantRoutes(function (): void {
+                Route::livewire('job-postings/{record}/form-preview', FormPreview::class)
+                    ->middleware(EnsurePrivilegedUsersHaveMultiFactorAuthentication::class)
+                    ->name('form-preview');
+            })
             ->databaseNotifications()
             ->colors([
                 'primary' => Color::Teal,

@@ -6,6 +6,7 @@ use App\Actions\Audit\RecordAuditEvent;
 use App\Enums\AuditEvent;
 use App\Models\Organization;
 use App\Models\User;
+use App\Support\HtmlSanitizer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -17,7 +18,10 @@ use Illuminate\Support\Facades\Validator;
  */
 class UpdateOrganizationProfile
 {
-    public function __construct(private readonly RecordAuditEvent $audit) {}
+    public function __construct(
+        private readonly RecordAuditEvent $audit,
+        private readonly HtmlSanitizer $sanitizer,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data
@@ -32,6 +36,8 @@ class UpdateOrganizationProfile
             'primary_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'secondary_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'listed_on_job_board' => ['boolean'],
+            'about' => ['nullable', 'string', 'max:20000'],
+            'website' => ['nullable', 'url:http,https', 'max:255'],
             'logo_path' => ['nullable', 'string', 'max:255', 'regex:/^organization-logos\/[A-Za-z0-9\-]+\.(png|jpg|jpeg|webp)$/'],
             'job_postings_requires_approval' => ['sometimes', 'boolean'],
             'job_postings_recruiters_see_all' => ['sometimes', 'boolean'],
@@ -63,6 +69,8 @@ class UpdateOrganizationProfile
                 'secondary_color' => $data['secondary_color'] ?? null,
                 'listed_on_job_board' => (bool) ($data['listed_on_job_board'] ?? false),
                 'logo_path' => $data['logo_path'] ?? null,
+                'about' => $this->sanitizer->clean($data['about'] ?? null),
+                'website' => $data['website'] ?? null,
             ]);
 
             $changes = array_keys($organization->getDirty());

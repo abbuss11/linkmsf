@@ -8,6 +8,7 @@ use App\Models\Organization;
 use App\Models\User;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -81,6 +82,18 @@ class EditOrganizationProfile extends EditTenantProfile
                         Toggle::make('listed_on_job_board')
                             ->label(__('organizations.fields.listed_on_job_board'))
                             ->helperText(__('organizations.profile.listed_help')),
+                        RichEditor::make('about')
+                            ->label(__('organizations.fields.about'))
+                            ->fileAttachments(false)
+                            ->toolbarButtons([
+                                ['bold', 'italic', 'link'],
+                                ['bulletList', 'orderedList'],
+                                ['undo', 'redo'],
+                            ]),
+                        TextInput::make('website')
+                            ->label(__('organizations.fields.website'))
+                            ->url()
+                            ->maxLength(255),
                     ]),
                 Section::make(__('organizations.profile.job_postings'))
                     ->schema([

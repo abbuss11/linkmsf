@@ -3,24 +3,21 @@
 namespace App\Filament\App\Resources\JobPostings\Pages;
 
 use App\Filament\App\Resources\JobPostings\JobPostingResource;
-use App\Forms\Dynamic\FilamentFormRenderer;
-use App\Forms\Dynamic\FormSchema;
 use App\Models\ApplicationForm;
 use App\Models\ApplicationFormVersion;
 use App\Models\JobPosting;
 use Filament\Actions\Action;
-use Filament\Notifications\Notification;
+use Filament\Facades\Filament;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
-use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Url;
 
 /**
  * Shows the form exactly as candidates will see it, on a computer or a phone,
- * with server-side validation (§3.1 step 4). Nothing is stored.
- *
- * @property-read Schema $form
+ * with server-side validation (§3.1 step 4): the form itself is drawn by
+ * FormPreview, with the candidate Blade components, in an iframe. Nothing is
+ * stored.
  */
 class PreviewJobPosting extends Page
 {
@@ -30,9 +27,6 @@ class PreviewJobPosting extends Page
 
     protected string $view = 'filament.app.job-postings.preview';
 
-    /** @var array<string, mixed> */
-    public ?array $answers = [];
-
     /** Published version to show; the working copy when null. */
     #[Url]
     public ?int $version = null;
@@ -41,35 +35,20 @@ class PreviewJobPosting extends Page
     {
         $this->record = $this->resolveRecord($record);
         abort_unless(Gate::allows('view', $this->record), 403);
+    }
 
-        $this->form->fill();
+    public function previewUrl(): string
+    {
+        return route('filament.app.form-preview', array_filter([
+            'tenant' => Filament::getTenant(),
+            'record' => $this->posting()->ulid,
+            'version' => $this->version,
+        ]));
     }
 
     public function getTitle(): string
     {
         return __('job_postings.preview.title', ['title' => $this->posting()->title]);
-    }
-
-    public function form(Schema $schema): Schema
-    {
-        return $schema
-            ->statePath('answers')
-            ->components(app(FilamentFormRenderer::class)->components($this->formSchema()));
-    }
-
-    public function formSchema(): FormSchema
-    {
-        $form = ApplicationForm::query()->where('job_posting_id', $this->posting()->getKey())->firstOrFail();
-
-        if ($this->version === null) {
-            return $form->draftSchema();
-        }
-
-        return ApplicationFormVersion::query()
-            ->where('application_form_id', $form->getKey())
-            ->where('version', $this->version)
-            ->firstOrFail()
-            ->formSchema();
     }
 
     /**
@@ -84,13 +63,6 @@ class PreviewJobPosting extends Page
             ->orderBy('version')
             ->pluck('version', 'version')
             ->all();
-    }
-
-    public function check(): void
-    {
-        $this->form->getState();
-
-        Notification::make()->success()->title(__('job_postings.preview.valid'))->send();
     }
 
     protected function getHeaderActions(): array

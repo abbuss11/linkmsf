@@ -6,6 +6,8 @@ use App\Enums\OrganizationRole;
 use App\Filament\App\Resources\JobPostings\Pages\CreateJobPosting;
 use App\Filament\App\Resources\JobPostings\Pages\EditJobPosting;
 use App\Filament\App\Resources\JobPostings\Pages\PreviewJobPosting;
+use App\Livewire\FormPreview;
+use App\Models\Application;
 use App\Models\ApplicationForm;
 use App\Models\JobPosting;
 use App\Models\JobRequirement;
@@ -143,14 +145,30 @@ it('previews the form with server-side validation, without storing anything', fu
     $posting = draftPosting($this->recruiter, $this->org);
 
     Livewire::test(PreviewJobPosting::class, ['record' => $posting->ulid])
+        ->assertSee('form-preview', escape: false);
+
+    Livewire::test(FormPreview::class, ['record' => $posting->ulid])
         ->assertSee('Nom complet')
         ->assertSee('Disponible immédiatement ?')
         ->call('check')
         ->assertHasErrors()
-        ->fillForm(['nom_complet' => 'Awa Moussa', 'niveau_detudes' => 'licence', 'disponible_immediatement' => 'yes'])
+        ->set('answers.nom_complet', 'Awa Moussa')
+        ->set('answers.niveau_detudes', 'licence')
+        ->set('answers.disponible_immediatement', 'yes')
         ->call('check')
         ->assertHasNoErrors()
-        ->assertNotified(__('job_postings.preview.valid'));
+        ->assertSee(__('job_postings.preview.valid'));
+
+    expect(Application::queryAcrossOrganizations()->count())->toBe(0);
+});
+
+it('serves the form preview inside the panel, with the candidate stylesheet', function () {
+    $posting = draftPosting($this->recruiter, $this->org);
+
+    $this->get("/app/sahel/job-postings/{$posting->ulid}/form-preview")
+        ->assertOk()
+        ->assertSee('Nom complet')
+        ->assertDontSee('filament', escape: false);
 });
 
 it('opens an archived offer read-only and refuses changes', function () {

@@ -6,6 +6,7 @@ use App\Actions\Audit\RecordAuditEvent;
 use App\Enums\AuditEvent;
 use App\Enums\JobPostingStatus;
 use App\Exceptions\ActionFailed;
+use App\Jobs\GenerateShareImage;
 use App\Models\JobPosting;
 use App\Models\User;
 
@@ -45,6 +46,10 @@ class TransitionJobPosting
         }
 
         $posting->save();
+
+        if ($target === JobPostingStatus::Published) {
+            GenerateShareImage::dispatch($posting)->afterCommit();
+        }
 
         $this->audit->handle(
             $event,

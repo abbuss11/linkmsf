@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Listeners\RecordAuthenticationEvents;
+use App\Models\Application;
+use App\Models\User;
 use App\Services\AntiSpam\CaptchaVerifier;
 use App\Services\AntiSpam\NullCaptchaVerifier;
 use App\Services\AntiSpam\TurnstileCaptchaVerifier;
@@ -15,6 +17,7 @@ use Illuminate\Queue\Events\JobProcessed;
 use Illuminate\Queue\Events\JobProcessing;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
@@ -49,16 +52,39 @@ class AppServiceProvider extends ServiceProvider
 
         $this->resetOrganizationContextAroundJobs();
         $this->configureRateLimiting();
+        $this->bindCandidateApplications();
+    }
+
+    /**
+     * {application} in candidate URLs only resolves among the logged-in
+     * candidate's own applications: anyone else's gives a 404, not a 403.
+     */
+    private function bindCandidateApplications(): void
+    {
+        Route::bind('application', function (string $value) {
+            $user = auth()->user();
+            abort_unless($user instanceof User && $user->isCandidate(), 404);
+
+            return Application::forCandidate($user)->where('ulid', $value)->firstOrFail();
+        });
     }
 
     /**
      * Belt and braces on top of the scoped binding: a job never inherits the
-     * organisation of the previous job processed by the same worker.
+     * organisation of the previous job processed by the same worker. Jobs on
+     * the "sync" connection run inside the current request, whose context
+     * must survive them (RestoreOrganizationContext restores it).
      */
     private function resetOrganizationContextAroundJobs(): void
     {
-        Event::listen(JobProcessing::class, fn () => app(OrganizationContext::class)->clear());
-        Event::listen(JobProcessed::class, fn () => app(OrganizationContext::class)->clear());
+        $clear = function (JobProcessing|JobProcessed $event): void {
+            if ($event->connectionName !== 'sync') {
+                app(OrganizationContext::class)->clear();
+            }
+        };
+
+        Event::listen(JobProcessing::class, $clear);
+        Event::listen(JobProcessed::class, $clear);
     }
 
     private function configureRateLimiting(): void
@@ -88,6 +114,9 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('organization-requests', fn (Request $request) => Limit::perHour($limits['organization_requests_per_hour_per_ip'])
             ->by('org-request:'.$request->ip()));
+
+        RateLimiter::for('uploads', fn (Request $request) => Limit::perMinute((int) config('link.rate_limits.upload_requests_per_minute'))
+            ->by('uploads:'.($request->user()?->getAuthIdentifier() ?? $request->ip())));
 
         RateLimiter::for('invitations', fn (Request $request) => Limit::perMinute($limits['invitation_accept_per_minute'])
             ->by('invitation:'.$request->ip()));

@@ -2,6 +2,7 @@
 
 namespace App\Filament\App\Resources\JobPostings;
 
+use App\Enums\ApplicationStatus;
 use App\Enums\JobPostingStatus;
 use App\Enums\JobPostingType;
 use App\Enums\OrganizationRole;
@@ -53,7 +54,8 @@ class JobPostingResource extends Resource
      */
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery();
+        $query = parent::getEloquentQuery()
+            ->withCount(['applications as submitted_applications_count' => fn (Builder $applications) => $applications->where('status', ApplicationStatus::Submitted->value)]);
         $user = auth()->user();
         $organization = Filament::getTenant();
 
@@ -80,6 +82,7 @@ class JobPostingResource extends Resource
                     ->dateTime('d/m/Y H:i', timezone: fn (JobPosting $record): string => Filament::getTenant() instanceof Organization ? Filament::getTenant()->timezone : config('link.display_timezone'))
                     ->placeholder('—')
                     ->sortable(),
+                TextColumn::make('submitted_applications_count')->label(__('job_postings.fields.applications_count'))->numeric()->sortable(),
                 TextColumn::make('updated_at')->label(__('job_postings.fields.updated_at'))->since()->sortable(),
             ])
             ->defaultSort('updated_at', 'desc')

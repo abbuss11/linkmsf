@@ -46,7 +46,7 @@ it('refuses the pages of an offer of another organisation', function (string $su
     $this->actingAs($this->adminA)
         ->get("/app/org-b/job-postings/{$this->postingB->ulid}{$suffix}")
         ->assertNotFound();
-})->with(['edit' => ['/edit'], 'preview' => ['/preview']]);
+})->with(['edit' => ['/edit'], 'preview' => ['/preview'], 'form preview' => ['/form-preview']]);
 
 it('never lists offers of another organisation', function () {
     $own = draftPosting($this->adminA, $this->orgA);

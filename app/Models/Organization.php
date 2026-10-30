@@ -30,13 +30,15 @@ use Illuminate\Support\Facades\Storage;
  * @property string|null $logo_path
  * @property string|null $primary_color
  * @property string|null $secondary_color
+ * @property string|null $about
+ * @property string|null $website
  * @property bool $listed_on_job_board
  * @property array<string, mixed>|null $settings
  * @property Carbon|null $approved_at
  */
 #[Fillable([
     'name', 'slug', 'status', 'country', 'timezone', 'logo_path',
-    'primary_color', 'secondary_color', 'listed_on_job_board', 'settings',
+    'primary_color', 'secondary_color', 'about', 'website', 'listed_on_job_board', 'settings',
     'approved_at', 'approved_by',
 ])]
 class Organization extends Model implements HasAvatar, HasName
@@ -157,6 +159,14 @@ class Organization extends Model implements HasAvatar, HasName
     public function getFilamentAvatarUrl(): ?string
     {
         return $this->logo_path ? Storage::disk('public')->url($this->logo_path) : null;
+    }
+
+    /**
+     * Short upper-case code used in references (SAH for sahel-avenir).
+     */
+    public function code(): string
+    {
+        return strtoupper(substr(preg_replace('/[^a-z0-9]/i', '', $this->slug) ?: 'ORG', 0, 3));
     }
 
     public function getRouteKeyName(): string

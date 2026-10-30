@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -78,6 +79,46 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             'app_authentication_recovery_codes' => 'encrypted:array',
             'has_email_authentication' => 'boolean',
         ];
+    }
+
+    /**
+     * @return HasOne<CandidateProfile, $this>
+     */
+    public function candidateProfile(): HasOne
+    {
+        return $this->hasOne(CandidateProfile::class);
+    }
+
+    /**
+     * @return HasMany<CandidateEducation, $this>
+     */
+    public function educations(): HasMany
+    {
+        return $this->hasMany(CandidateEducation::class)->orderByDesc('end_year');
+    }
+
+    /**
+     * @return HasMany<CandidateExperience, $this>
+     */
+    public function experiences(): HasMany
+    {
+        return $this->hasMany(CandidateExperience::class)->orderByDesc('is_current')->orderByDesc('start_date');
+    }
+
+    /**
+     * @return HasMany<CandidateDocument, $this>
+     */
+    public function candidateDocuments(): HasMany
+    {
+        return $this->hasMany(CandidateDocument::class)->latest();
+    }
+
+    /**
+     * The profile, created empty on first use.
+     */
+    public function profile(): CandidateProfile
+    {
+        return $this->candidateProfile()->firstOrCreate([]);
     }
 
     public function isCandidate(): bool

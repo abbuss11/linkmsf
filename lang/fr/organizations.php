@@ -7,6 +7,8 @@ return [
     ],
     'fields' => [
         'name' => 'Nom',
+        'about' => 'Présentation (page carrière)',
+        'website' => 'Site web',
         'slug' => 'Identifiant d’URL',
         'slug_help' => 'Minuscules, chiffres et tirets. Utilisé dans /app/… et /o/…',
         'status' => 'Statut',

@@ -34,6 +34,8 @@ use Illuminate\Support\Carbon;
  * @property string $reference
  * @property string|null $description
  * @property string|null $missions
+ * @property string|null $search_text
+ * @property string|null $share_image_path
  * @property string|null $location
  * @property ContractType|null $contract_type
  * @property EducationLevel|null $education_level
@@ -74,6 +76,28 @@ class JobPosting extends Model
         'status' => 'draft',
         'wizard_step' => 1,
     ];
+
+    protected static function booted(): void
+    {
+        // Plain text copy for the FULLTEXT search of the job board.
+        static::saving(function (JobPosting $posting): void {
+            $posting->search_text = trim(implode(' ', array_filter([
+                strip_tags(str_replace('>', '> ', (string) $posting->description)),
+                $posting->missions,
+                $posting->location,
+                implode(' ', (array) $posting->skills),
+                $posting->reference,
+            ])));
+        });
+    }
+
+    /**
+     * @return HasMany<Application, $this>
+     */
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class);
+    }
 
     protected function casts(): array
     {

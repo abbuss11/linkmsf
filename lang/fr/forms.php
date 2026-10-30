@@ -3,6 +3,7 @@
 return [
     'yes' => 'Oui',
     'no' => 'Non',
+    'choose' => 'Choisissez…',
     'validation' => [
         'max_words' => 'Ce champ ne doit pas dépasser :max mots.',
     ],
