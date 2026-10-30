@@ -55,6 +55,16 @@ enum AuditEvent: string implements HasLabel
     case ApplicationSubmitted = 'application.submitted';
     case ApplicationUpdated = 'application.updated';
     case ApplicationWithdrawn = 'application.withdrawn';
+    case ApplicationMoved = 'application.moved';
+    case ApplicationReinstated = 'application.reinstated';
+    case ApplicationEligibilityEvaluated = 'application.eligibility_evaluated';
+    case ShortlistCreated = 'shortlist.created';
+    case ShortlistItemAdded = 'shortlist.item_added';
+    case ShortlistItemRemoved = 'shortlist.item_removed';
+    case ShortlistReordered = 'shortlist.reordered';
+    case PipelineUpdated = 'pipeline.updated';
+    case ExportRequested = 'export.requested';
+    case ExportDownloaded = 'export.downloaded';
 
     public function getLabel(): string
     {

@@ -7,8 +7,8 @@ it('grants every organisation permission to orgadmins', function (Permission $pe
     expect(OrganizationRole::OrgAdmin->can($permission))->toBeTrue();
 })->with(Permission::cases());
 
-it('lets recruiters manage offers and nothing else', function (Permission $permission) {
-    expect(OrganizationRole::Recruiter->can($permission))->toBe($permission === Permission::ManageJobPostings);
+it('lets recruiters manage offers and process and export applications, nothing else', function (Permission $permission) {
+    expect(OrganizationRole::Recruiter->can($permission))->toBe(in_array($permission, [Permission::ManageJobPostings, Permission::ProcessApplications, Permission::ExportApplications], true));
 })->with(Permission::cases());
 
 it('grants no organisation permission to jury members', function (Permission $permission) {

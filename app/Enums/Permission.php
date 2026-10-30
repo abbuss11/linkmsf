@@ -17,4 +17,7 @@ enum Permission: string
     case ApproveJobPostings = 'job_postings.approve';
     case AssignRecruiters = 'job_postings.assign';
     case ConfigureJobPostings = 'job_postings.configure';
+    case ProcessApplications = 'applications.process';
+    case ExportApplications = 'applications.export';
+    case ExportApplicationDocuments = 'applications.export_documents';
 }

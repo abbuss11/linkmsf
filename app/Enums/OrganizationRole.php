@@ -27,9 +27,16 @@ enum OrganizationRole: string implements HasColor, HasLabel
                 Permission::ApproveJobPostings,
                 Permission::AssignRecruiters,
                 Permission::ConfigureJobPostings,
+                Permission::ProcessApplications,
+                Permission::ExportApplications,
+                Permission::ExportApplicationDocuments,
             ],
+            // Exporting documents can be opened to recruiters by the
+            // organisation (see Organization::recruitersCanExportDocuments).
             self::Recruiter => [
                 Permission::ManageJobPostings,
+                Permission::ProcessApplications,
+                Permission::ExportApplications,
             ],
             self::Jury => [],
         };
