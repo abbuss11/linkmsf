@@ -2,7 +2,10 @@
 
 Plateforme SaaS de recrutement multi-organisations : publication d'offres, formulaires de candidature par offre, ATS, évaluation par jury et décision. La référence fonctionnelle est le [cahier des charges](docs/cahier-des-charges.md).
 
-État : **phase 1 (fondations)**. Organisations, invitations, rôles, isolation multi-tenant, authentification interne et candidat, journal d'audit.
+État : **phase 2 (offres et formulaires)**.
+
+- Phase 1 : organisations, invitations, rôles, isolation multi-tenant, authentification interne et candidat, journal d'audit.
+- Phase 2 : assistant de création d'offre en 5 étapes, critères, générateur de formulaires, prévisualisation, versionnement, cycle de vie, clôture automatique.
 
 ## Stack
 
@@ -35,6 +38,7 @@ npm ci && npm run build
 # trois terminaux
 php artisan serve                  # http://localhost:8000
 php artisan horizon                # ou : php artisan queue:work
+php artisan schedule:work          # clôture automatique des offres (chaque minute)
 # Mailpit : http://localhost:8025
 ```
 
@@ -56,7 +60,13 @@ Mot de passe pour tous : `password`. La double authentification par e-mail est d
 | `multi@link.test` | Recruteur chez Sahel, jury chez Kawtal | les deux |
 | `candidat@link.test` | Candidat | `/connexion`, `/espace-candidat` |
 
-Une demande d'espace en attente (« Coopérative Tafadek ») est aussi créée.
+Sont aussi créés :
+
+- une demande d'espace en attente (« Coopérative Tafadek ») ;
+- chez Sahel Avenir : une offre publiée avec son formulaire, ses critères et ses pièces (`SAH-2026-001`) et un brouillon (`SAH-2026-002`) ;
+- chez Kawtal Conseil, qui exige la validation des offres : une offre soumise en attente de validation (`KAW-2026-001`).
+
+En production, la tâche planifiée se lance par une entrée cron : `* * * * * php /chemin/vers/link/artisan schedule:run`.
 
 ## Commandes utiles
 

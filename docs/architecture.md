@@ -23,7 +23,13 @@ Le trait :
 | Lien public (invitation) | Aucun : l'invitation est retrouvée par son ULID et son jeton secret, via `queryAcrossOrganizations()` |
 | Panel `/admin` | Aucun : les vues plateforme utilisent explicitement les requêtes inter-organisations |
 
-Filament ajoute son propre scope de tenant sur les ressources du panel `/app`. Les deux mécanismes se cumulent.
+Filament ajoute son propre scope de tenant (`app_tenancy`) sur les modèles des ressources du panel `/app`, et rattache au tenant courant tout enregistrement de ces modèles créé pendant une requête du panel. Les deux mécanismes se cumulent ; `queryAcrossOrganizations()` retire les deux scopes.
+
+## Formulaires dynamiques (phase 2)
+
+- `application_forms.schema` : copie de travail éditée dans l'assistant.
+- `application_form_versions` : copies figées, immuables, créées à la publication si l'empreinte du schéma change. Chaque candidature (phase 3) référencera sa version.
+- `app/Forms/Dynamic` : `SchemaValidator` (structure), `RulesBuilder` (règles de validation serveur), `FilamentFormRenderer` (affichage), `RequirementRuleValidator` (critères éliminatoires). L'aperçu et le futur formulaire candidat utilisent les mêmes règles.
 
 ## Exceptions documentées
 

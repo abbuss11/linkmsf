@@ -21,7 +21,19 @@ La correspondance rôle → permissions est dans `App\Enums\OrganizationRole::pe
 | Horizon (files d'attente) | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Espace candidat | ❌ | ❌ | ❌ | ❌ | Le sien |
 
-Les permissions des recruteurs et du jury sur les offres, candidatures et évaluations arrivent avec les phases 2 à 5.
+### Offres (phase 2)
+
+| Action | Orgadmin | Recruteur | Jury |
+| --- | --- | --- | --- |
+| Voir les offres | Toutes | Toutes, ou seulement ses offres affectées (réglage d'organisation) | ❌ |
+| Créer, modifier, gérer critères et formulaire, dupliquer | ✅ | Sur les offres qu'il voit | ❌ |
+| Publier | ✅ | ✅, ou « soumettre » si la validation interne est activée | ❌ |
+| Valider ou renvoyer en brouillon une offre soumise | ✅ | ❌ | ❌ |
+| Suspendre, reprendre, clôturer, rouvrir (motif obligatoire), archiver | ✅ | Sur les offres qu'il voit | ❌ |
+| Affecter des recruteurs | ✅ | ❌ | ❌ |
+| Régler validation interne et visibilité des offres | ✅ | ❌ | ❌ |
+
+Un recruteur qui ne voit pas une offre reçoit une 404 (rien n'est révélé). Les permissions sur les candidatures et évaluations arrivent avec les phases 3 à 5.
 
 ## Règles métier
 

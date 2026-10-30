@@ -22,6 +22,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 trait BelongsToOrganization
 {
+    /**
+     * Global scope Filament registers on models of the /app panel resources
+     * ("{panel id}_tenancy"). Removed together with ours when a caller
+     * explicitly crosses organisations.
+     */
+    public static string $filamentTenancyScope = 'app_tenancy';
+
     public static function bootBelongsToOrganization(): void
     {
         static::addGlobalScope(new OrganizationScope);
@@ -63,7 +70,7 @@ trait BelongsToOrganization
      */
     public static function queryAcrossOrganizations(): Builder
     {
-        return static::query()->withoutGlobalScope(OrganizationScope::class);
+        return static::query()->withoutGlobalScopes([OrganizationScope::class, static::$filamentTenancyScope]);
     }
 
     /**

@@ -8,6 +8,18 @@ return [
     */
     'display_timezone' => env('LINK_DISPLAY_TIMEZONE', 'Africa/Niamey'),
 
+    /*
+    | File fields of application forms. Organisations may be stricter per
+    | field, never looser than the caps. Sizes target slow mobile connections.
+    */
+    'uploads' => [
+        'allowed_extensions' => ['pdf', 'jpg', 'png', 'docx'],
+        'default_max_kb' => 5120,
+        'max_kb_cap' => 10240,
+        'default_max_files' => 3,
+        'max_files_cap' => 10,
+    ],
+
     'invitations' => [
         'validity_days' => 7,
     ],

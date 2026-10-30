@@ -6,6 +6,7 @@ use App\Exceptions\ActionFailed;
 use Closure;
 use Filament\Notifications\Notification;
 use Filament\Support\Exceptions\Halt;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -30,6 +31,8 @@ class RunsActions
             self::fail($exception->getMessage());
         } catch (ValidationException $exception) {
             self::fail((string) collect($exception->errors())->flatten()->first());
+        } catch (AuthorizationException) {
+            self::fail(__('public.not_allowed'));
         }
     }
 

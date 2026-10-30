@@ -119,6 +119,31 @@ class Organization extends Model implements HasAvatar, HasName
         return $this->status === OrganizationStatus::Active;
     }
 
+    /**
+     * @return HasMany<JobPosting, $this>
+     */
+    public function jobPostings(): HasMany
+    {
+        return $this->hasMany(JobPosting::class);
+    }
+
+    /**
+     * Offers must be validated by an orgadmin before publication (§12, off by default).
+     */
+    public function requiresJobPostingApproval(): bool
+    {
+        return (bool) data_get($this->settings, 'job_postings.requires_approval', false);
+    }
+
+    /**
+     * Recruiters see every offer of the organisation (default), or only the
+     * offers they are assigned to (§2.1).
+     */
+    public function recruitersSeeAllJobPostings(): bool
+    {
+        return (bool) data_get($this->settings, 'job_postings.recruiters_see_all', true);
+    }
+
     public function limit(string $key): int
     {
         return (int) data_get($this->settings, "limits.{$key}", self::DEFAULT_LIMITS[$key] ?? 0);

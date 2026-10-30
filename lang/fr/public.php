@@ -2,6 +2,7 @@
 
 return [
     'skip_to_content' => 'Aller au contenu',
+    'not_allowed' => 'Vous n’avez pas le droit d’effectuer cette action.',
     'nav' => [
         'label' => 'Navigation principale',
         'my_space' => 'Mon espace',

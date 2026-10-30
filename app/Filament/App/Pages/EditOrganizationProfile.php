@@ -82,7 +82,30 @@ class EditOrganizationProfile extends EditTenantProfile
                             ->label(__('organizations.fields.listed_on_job_board'))
                             ->helperText(__('organizations.profile.listed_help')),
                     ]),
+                Section::make(__('organizations.profile.job_postings'))
+                    ->schema([
+                        Toggle::make('job_postings_requires_approval')
+                            ->label(__('organizations.fields.job_postings_requires_approval'))
+                            ->helperText(__('organizations.profile.requires_approval_help')),
+                        Toggle::make('job_postings_recruiters_see_all')
+                            ->label(__('organizations.fields.job_postings_recruiters_see_all'))
+                            ->helperText(__('organizations.profile.recruiters_see_all_help')),
+                    ]),
             ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        /** @var Organization $organization */
+        $organization = $this->tenant;
+        $data['job_postings_requires_approval'] = $organization->requiresJobPostingApproval();
+        $data['job_postings_recruiters_see_all'] = $organization->recruitersSeeAllJobPostings();
+
+        return $data;
     }
 
     /**

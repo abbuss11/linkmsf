@@ -13,4 +13,8 @@ enum Permission: string
     case ManageMembers = 'members.manage';
     case ManageInvitations = 'invitations.manage';
     case ViewAuditLog = 'audit.view';
+    case ManageJobPostings = 'job_postings.manage';
+    case ApproveJobPostings = 'job_postings.approve';
+    case AssignRecruiters = 'job_postings.assign';
+    case ConfigureJobPostings = 'job_postings.configure';
 }

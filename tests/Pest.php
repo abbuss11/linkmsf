@@ -1,6 +1,9 @@
 <?php
 
+use App\Actions\JobPostings\CreateJobPostingDraft;
+use App\Actions\JobPostings\SaveApplicationForm;
 use App\Enums\OrganizationRole;
+use App\Models\JobPosting;
 use App\Models\Organization;
 use App\Models\OrganizationMembership;
 use App\Models\User;
@@ -83,7 +86,43 @@ function actingOnPlatform(User $user): User
     return $user;
 }
 
+/**
+ * Runs code as an /app request for this organisation would: our context and
+ * Filament's tenant both point to it (Filament attaches created records of
+ * panel resources to its current tenant).
+ */
 function inOrganization(Organization $organization, Closure $callback): mixed
 {
-    return app(OrganizationContext::class)->runFor($organization, $callback);
+    $previousTenant = Filament::getTenant();
+    Filament::setTenant($organization, isQuiet: true);
+
+    try {
+        return app(OrganizationContext::class)->runFor($organization, $callback);
+    } finally {
+        Filament::setTenant($previousTenant, isQuiet: true);
+    }
+}
+
+/**
+ * Builds an offer through the real Actions: draft, form, optional criteria.
+ *
+ * @param  list<array<string, mixed>>|null  $fields
+ */
+function draftPosting(User $actor, Organization $organization, array $details = [], ?array $fields = null): JobPosting
+{
+    return inOrganization($organization, function () use ($actor, $organization, $details, $fields) {
+        $posting = app(CreateJobPostingDraft::class)->handle($actor, $organization, array_merge([
+            'type' => 'employment',
+            'title' => 'Chargé de suivi-évaluation',
+            'closes_at' => now()->addDays(10)->toDateTimeString(),
+        ], $details));
+
+        app(SaveApplicationForm::class)->handle($actor, $posting, $fields ?? [
+            ['type' => 'short_text', 'label' => 'Nom complet', 'required' => true, 'profile_field' => 'full_name'],
+            ['type' => 'select', 'label' => 'Niveau d’études', 'required' => true, 'profile_field' => 'education_level'],
+            ['type' => 'yes_no', 'label' => 'Disponible immédiatement ?', 'required' => true],
+        ]);
+
+        return $posting->fresh();
+    });
 }

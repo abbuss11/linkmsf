@@ -40,6 +40,14 @@ class OrganizationPolicy
             || $user->hasPermissionIn($organization, Permission::UpdateOrganizationProfile);
     }
 
+    /**
+     * Offer workflow settings: approval before publication, recruiter visibility.
+     */
+    public function configureJobPostings(User $user, Organization $organization): bool
+    {
+        return $user->hasPermissionIn($organization, Permission::ConfigureJobPostings);
+    }
+
     public function changeStatus(User $user, Organization $organization): bool
     {
         return $user->isSuperadmin();

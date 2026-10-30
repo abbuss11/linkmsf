@@ -33,10 +33,28 @@ class UpdateOrganizationProfile
             'secondary_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'listed_on_job_board' => ['boolean'],
             'logo_path' => ['nullable', 'string', 'max:255', 'regex:/^organization-logos\/[A-Za-z0-9\-]+\.(png|jpg|jpeg|webp)$/'],
+            'job_postings_requires_approval' => ['sometimes', 'boolean'],
+            'job_postings_recruiters_see_all' => ['sometimes', 'boolean'],
         ])->validate();
 
-        return DB::transaction(function () use ($actor, $organization, $data) {
+        $configuresJobPostings = array_key_exists('job_postings_requires_approval', $data)
+            || array_key_exists('job_postings_recruiters_see_all', $data);
+
+        if ($configuresJobPostings) {
+            Gate::forUser($actor)->authorize('configureJobPostings', $organization);
+        }
+
+        return DB::transaction(function () use ($actor, $organization, $data, $configuresJobPostings) {
             $previousLogo = $organization->logo_path;
+
+            if ($configuresJobPostings) {
+                $settings = $organization->settings ?? [];
+                $settings['job_postings'] = [
+                    'requires_approval' => (bool) ($data['job_postings_requires_approval'] ?? $organization->requiresJobPostingApproval()),
+                    'recruiters_see_all' => (bool) ($data['job_postings_recruiters_see_all'] ?? $organization->recruitersSeeAllJobPostings()),
+                ];
+                $organization->settings = $settings;
+            }
 
             $organization->fill([
                 'name' => $data['name'],

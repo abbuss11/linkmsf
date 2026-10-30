@@ -23,8 +23,15 @@ enum OrganizationRole: string implements HasColor, HasLabel
                 Permission::ManageMembers,
                 Permission::ManageInvitations,
                 Permission::ViewAuditLog,
+                Permission::ManageJobPostings,
+                Permission::ApproveJobPostings,
+                Permission::AssignRecruiters,
+                Permission::ConfigureJobPostings,
             ],
-            self::Recruiter, self::Jury => [],
+            self::Recruiter => [
+                Permission::ManageJobPostings,
+            ],
+            self::Jury => [],
         };
     }
 
