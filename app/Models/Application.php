@@ -5,14 +5,17 @@ namespace App\Models;
 use App\Enums\ApplicationStatus;
 use App\Enums\DuplicatePolicy;
 use App\Enums\EditAfterSubmitPolicy;
+use App\Enums\EligibilityStatus;
 use App\Enums\PublicApplicationStatus;
 use App\Models\Concerns\BelongsToOrganization;
 use Database\Factories\ApplicationFactory;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
@@ -39,8 +42,22 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $submitted_at
  * @property Carbon|null $withdrawn_at
  * @property Carbon|null $draft_reminded_at
+ * @property int|null $pipeline_stage_id
+ * @property Carbon|null $stage_changed_at
+ * @property EligibilityStatus|null $eligibility
+ * @property Carbon|null $eligibility_checked_at
+ * @property int $documents_received
+ * @property int $documents_expected
+ * @property string|null $candidate_name
+ * @property string|null $city
+ * @property int|null $education_rank
+ * @property int|null $years_of_experience
+ * @property list<string>|null $languages
+ * @property list<string>|null $skills
+ * @property Carbon|null $last_activity_at
  * @property-read JobPosting $jobPosting
  * @property-read ApplicationFormVersion|null $formVersion
+ * @property-read PipelineStage|null $stage
  */
 class Application extends Model
 {
@@ -67,6 +84,16 @@ class Application extends Model
             'submitted_at' => 'datetime',
             'withdrawn_at' => 'datetime',
             'draft_reminded_at' => 'datetime',
+            'stage_changed_at' => 'datetime',
+            'eligibility' => EligibilityStatus::class,
+            'eligibility_checked_at' => 'datetime',
+            'documents_received' => 'integer',
+            'documents_expected' => 'integer',
+            'education_rank' => 'integer',
+            'years_of_experience' => 'integer',
+            'languages' => 'array',
+            'skills' => 'array',
+            'last_activity_at' => 'datetime',
         ];
     }
 
@@ -131,6 +158,65 @@ class Application extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(ApplicationDocument::class)->withoutGlobalScopes();
+    }
+
+    /**
+     * Relations below are reached from an application already loaded for
+     * its organisation: the foreign key ties them to it.
+     *
+     * @return BelongsTo<PipelineStage, $this>
+     */
+    public function stage(): BelongsTo
+    {
+        return $this->belongsTo(PipelineStage::class, 'pipeline_stage_id')->withoutGlobalScopes();
+    }
+
+    /**
+     * @return HasMany<ApplicationStatusHistory, $this>
+     */
+    public function histories(): HasMany
+    {
+        return $this->hasMany(ApplicationStatusHistory::class)->withoutGlobalScopes()->orderByDesc('created_at')->orderByDesc('id');
+    }
+
+    /**
+     * @return HasMany<EligibilityResult, $this>
+     */
+    public function eligibilityResults(): HasMany
+    {
+        return $this->hasMany(EligibilityResult::class)->withoutGlobalScopes()->orderBy('id');
+    }
+
+    /**
+     * @return BelongsToMany<Tag, $this>
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'application_tag')->withoutGlobalScopes()->withTimestamps()->orderBy('name');
+    }
+
+    /**
+     * @return HasMany<Note, $this>
+     */
+    public function notes(): HasMany
+    {
+        return $this->hasMany(Note::class)->withoutGlobalScopes()->latest();
+    }
+
+    /**
+     * Submitted (or withdrawn) applications: organisations never see drafts.
+     *
+     * @param  Builder<static>  $query
+     */
+    #[Scope]
+    protected function received(Builder $query): void
+    {
+        $query->whereIn($query->qualifyColumn('status'), [ApplicationStatus::Submitted->value, ApplicationStatus::Withdrawn->value]);
+    }
+
+    public function isComplete(): bool
+    {
+        return $this->documents_received >= $this->documents_expected;
     }
 
     /**
