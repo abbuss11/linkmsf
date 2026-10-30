@@ -1,58 +1,96 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# LINK
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Plateforme SaaS de recrutement multi-organisations : publication d'offres, formulaires de candidature par offre, ATS, évaluation par jury et décision. La référence fonctionnelle est le [cahier des charges](docs/cahier-des-charges.md).
 
-## About Laravel
+État : **phase 2 (offres et formulaires)**.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Phase 1 : organisations, invitations, rôles, isolation multi-tenant, authentification interne et candidat, journal d'audit.
+- Phase 2 : assistant de création d'offre en 5 étapes, critères, générateur de formulaires, prévisualisation, versionnement, cycle de vie, clôture automatique.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Couche | Version |
+| --- | --- |
+| PHP | 8.3 (plateforme figée dans `composer.json`) |
+| Laravel | 13 |
+| Filament | 5 (Livewire 4) : panels `/admin` et `/app/{organisation}` |
+| Base de données | MySQL 8 (utf8mb4) |
+| Files d'attente | Redis + Horizon |
+| Front public | Blade + Tailwind 4 (Vite), sans JavaScript obligatoire |
+| Audit | spatie/laravel-activitylog 4 (table `audit_logs`) |
+| Tests et qualité | Pest 4, Larastan 3 (niveau 6), Pint |
 
-## Learning Laravel
+Les versions exactes sont figées dans `composer.lock` et `package-lock.json`.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Installation locale
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Prérequis : PHP 8.3 avec `pdo_mysql`, `redis`, `intl`, `mbstring`, `zip` ; Composer 2 ; Node 22 ; MySQL 8 ; Redis ; un serveur SMTP de développement ([Mailpit](https://mailpit.axllent.org/)) ou `MAIL_MAILER=log`.
 
 ```bash
-composer require laravel/boost --dev
+git clone https://github.com/abbuss11/linkmsf.git link && cd link
+cp .env.example .env               # puis renseigner DB_PASSWORD, etc.
+composer install
+php artisan key:generate
+php artisan migrate --seed         # données de démonstration
+php artisan storage:link
+npm ci && npm run build
 
-php artisan boost:install
+# trois terminaux
+php artisan serve                  # http://localhost:8000
+php artisan horizon                # ou : php artisan queue:work
+php artisan schedule:work          # clôture automatique des offres (chaque minute)
+# Mailpit : http://localhost:8025
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+`APP_URL` doit correspondre à l'adresse réellement utilisée : les liens d'invitation et de vérification sont signés avec elle.
 
-## Contributing
+## Comptes de démonstration
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Mot de passe pour tous : `password`. La double authentification par e-mail est déjà activée pour les comptes qui l'exigent : le code arrive dans Mailpit (ou dans `storage/logs/laravel.log` avec `MAIL_MAILER=log`).
 
-## Code of Conduct
+| Compte | Rôle | Accès |
+| --- | --- | --- |
+| `admin@link.test` | Superadmin | `/admin` |
+| `admin@sahel-avenir.test` | Orgadmin, Association Sahel Avenir | `/app/sahel-avenir` |
+| `recruteur@sahel-avenir.test` | Recruteur, Sahel Avenir | `/app/sahel-avenir` |
+| `jury@sahel-avenir.test` | Jury, Sahel Avenir | `/app/sahel-avenir` |
+| `admin@kawtal-conseil.test` | Orgadmin, Cabinet Kawtal Conseil | `/app/kawtal-conseil` |
+| `recruteur@kawtal-conseil.test` | Recruteur, Kawtal | `/app/kawtal-conseil` |
+| `jury@kawtal-conseil.test` | Jury, Kawtal | `/app/kawtal-conseil` |
+| `multi@link.test` | Recruteur chez Sahel, jury chez Kawtal | les deux |
+| `candidat@link.test` | Candidat | `/connexion`, `/espace-candidat` |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Sont aussi créés :
 
-## Security Vulnerabilities
+- une demande d'espace en attente (« Coopérative Tafadek ») ;
+- chez Sahel Avenir : une offre publiée avec son formulaire, ses critères et ses pièces (`SAH-2026-001`) et un brouillon (`SAH-2026-002`) ;
+- chez Kawtal Conseil, qui exige la validation des offres : une offre soumise en attente de validation (`KAW-2026-001`) ;
+- un profil complet pour `candidat@link.test` (formation, expérience), pour essayer le pré-remplissage.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Pages publiques : `/offres` (job board), `/offres/{slug}` (offre), `/o/sahel-avenir` (page carrière), `/sitemap.xml`. Le worker de file (`php artisan horizon` ou `queue:work`) génère les images de partage et envoie les e-mails ; `php artisan storage:link` rend les images accessibles.
 
-## License
+En production, la tâche planifiée se lance par une entrée cron : `* * * * * php /chemin/vers/link/artisan schedule:run`.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Commandes utiles
+
+```bash
+vendor/bin/pest                    # tests (base MySQL link_testing)
+vendor/bin/pint                    # formatage
+vendor/bin/phpstan analyse         # analyse statique
+node tests/Browser/phone-3g.js     # parcours candidat sur téléphone en 3G (serveur lancé, base de démo)
+```
+
+Les tests utilisent la base `link_testing` (voir `phpunit.xml`) avec les identifiants du `.env`.
+
+## Organisation du code
+
+- `app/Actions` : une classe par opération métier ; les contrôleurs et pages Filament ne font qu'appeler ces actions. Chaque action vérifie elle-même l'autorisation.
+- `app/Enums` : rôles, statuts, permissions, événements d'audit.
+- `app/Models/Concerns/BelongsToOrganization.php` : isolation par organisation (voir [docs/architecture.md](docs/architecture.md)).
+- `app/Policies` : une policy par modèle exposé.
+- `app/Filament/Admin` (panel plateforme) et `app/Filament/App` (panel organisation).
+- `app/Livewire` : assistant de candidature et aperçu du formulaire ; `resources/views/components/dynamic` : rendu Blade des champs.
+- `app/Http/Controllers/Showcase` (vitrine) et `app/Http/Controllers/Candidate` (espace candidat, envoi par morceaux, téléchargements signés).
+- `lang/fr` : tous les textes d'interface.
+
+Voir aussi [docs/roles-et-permissions.md](docs/roles-et-permissions.md) et [docs/decisions.md](docs/decisions.md).
